@@ -13,12 +13,19 @@ static const char *info_path = "/info.txt";
 static int pstreeFS_getattr(const char *path, struct stat *st_data)
 {
 	int res = 0;
-    memset(st_data, 0, sizeof(struct stat));
-	
-	// dummy 
-	st_data->st_mode = S_IFDIR | 0755;
-    st_data->st_nlink = 2;
-	// dummy 
+	memset(st_data, 0, sizeof(struct stat));
+
+	if(strcmp(path, "/")==0){
+		st_data->st_mode = S_IFDIR | 0755;
+		st_data->st_nlink = 2;
+	}else if(strcmp(path, info_path)==0){
+		st_data->st_mode = S_IFREG | 0444;
+		st_data->st_nlink = 1;
+		st_data->st_size = 50;
+	}else{
+		res = -ENOENT;
+	}
+
 	
     return 0;
 }
@@ -26,8 +33,8 @@ static int pstreeFS_getattr(const char *path, struct stat *st_data)
 static int pstreeFS_readdir(const char *path, void *buf, fuse_fill_dir_t filler,off_t offset, struct fuse_file_info *fi)
 {
 	(void) offset;
-    (void) fi;
-
+	(void) fi;
+	int res = 0;
 	// if its root we have to show init proc folder only
 	if(strcmp(path,"/")==0){
 		filler(buf, "0",NULL, 0);
@@ -39,7 +46,7 @@ static int pstreeFS_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 		res = -ENOENT;
 	}
 
-	return 0;
+	return res;
 }
 static int pstreeFS_open(const char *path, struct fuse_file_info *fi)
 {
