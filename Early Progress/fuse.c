@@ -1,11 +1,3 @@
-/*
-    FUSE: Filesystem in Userspace
-    Copyright (C) 2001-2005  Miklos Szeredi <miklos@szeredi.hu>
-
-    This program can be distributed under the terms of the GNU GPL.
-    See the file COPYING.
-*/
-
 #define FUSE_USE_VERSION 26
 
 #include <fuse.h>
@@ -65,7 +57,6 @@ static void push(int newID,char *newDir, int newPID){
         rear->next = temp;
     
     rear = temp;
-   
 }
 
 static struct node* pop(){
@@ -85,6 +76,7 @@ static struct node* pop(){
 
 ////////////////////////////////// LIST start
 
+// ??? obsolete ???
 static void listInit(){
     root = malloc(sizeof(struct node2));
     root->dir = malloc(sizeof(char) * 6);

@@ -34,13 +34,13 @@ static int pstreeFS_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	
 	return 0;
 }
-static int hello_open(const char *path, struct fuse_file_info *fi)
+static int pstreeFS_open(const char *path, struct fuse_file_info *fi)
 {
 	// dummy
 	return 0;
 }
 
-static int hello_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
+static int pstreeFS_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	// dummy
     return size;
@@ -49,8 +49,8 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset, st
 static struct fuse_operations pstreeFS_oper = {
     .getattr	= pstreeFS_getattr,
     .readdir	= pstreeFS_readdir,
-    .open	= hello_open,
-    .read	= hello_read,
+    .open	= pstreeFS_open,
+    .read	= pstreeFS_read,
 };
 
 int main(int argc, char *argv[]){
