@@ -8,6 +8,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+static const char *info_path = "/info.txt";
+
 static int pstreeFS_getattr(const char *path, struct stat *st_data)
 {
 	int res = 0;
@@ -26,12 +28,17 @@ static int pstreeFS_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	(void) offset;
     (void) fi;
 
-	// dummy
-	filler(buf, "0",NULL, 0);
-	filler(buf, ".", NULL, 0);
-	filler(buf, "..", NULL, 0);
-	// dummy
-	
+	// if its root we have to show init proc folder only
+	if(strcmp(path,"/")==0){
+		filler(buf, "0",NULL, 0);
+		filler(buf, ".", NULL, 0);
+		filler(buf, "..", NULL, 0);
+		filler(buf, info_path + 1, NULL, 0);
+	}else{
+		// get childs of given process id
+		res = -ENOENT;
+	}
+
 	return 0;
 }
 static int pstreeFS_open(const char *path, struct fuse_file_info *fi)
