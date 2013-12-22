@@ -11,11 +11,11 @@
 static int pstreeFS_getattr(const char *path, struct stat *st_data)
 {
 	int res = 0;
-    memset(stbuf, 0, sizeof(struct stat));
+    memset(st_data, 0, sizeof(struct stat));
 	
 	// dummy 
-	stbuf->st_mode = S_IFDIR | 0755;
-    stbuf->st_nlink = 2;
+	st_data->st_mode = S_IFDIR | 0755;
+    st_data->st_nlink = 2;
 	// dummy 
 	
     return 0;
