@@ -54,6 +54,7 @@ static struct fuse_operations pstreeFS_oper = {
 };
 
 int main(int argc, char *argv[]){
+	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	
 	fuse_main(args.argc, args.argv, &pstreeFS_oper, NULL);
 
