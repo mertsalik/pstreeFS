@@ -120,7 +120,6 @@ void parse_path(char *path, char *result){
 	}
 	strncpy(result,tmp,strlen(tmp)+1);
 }
-<<<<<<< HEAD
 
 int is_info_query(char *path){
         char *pch;
@@ -139,5 +138,3 @@ void removeSubstring(char *s, const char *toremove){
 void clear_info_query(char *path){
         removeSubstring(path,"info.txt");
 }
-=======
->>>>>>> 13a58e59d269eb8ddc9dcac061ee239740d8f2f2
