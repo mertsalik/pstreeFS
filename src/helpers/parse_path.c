@@ -6,12 +6,16 @@
  *	If path is not correct
  *	It returns -1
  */
-void parse_path(char *path, char *result){
+void parse_path2(char *path, char *result){
 	char *pch;
 	char tmp[20];
 	char *saveptr;
 	pch = strtok_r(path, "/", &saveptr);
 	while(pch!=NULL){
+		if(!is_proc_folder(pch)){
+			strcpy(tmp,"-1");
+			break;
+		}
 		if(strcmp(pch,"0")==0){
 			strncpy(tmp,pch,strlen(pch)+1);
 			pch = strtok_r(NULL, "/", &saveptr);
@@ -37,9 +41,12 @@ void parse_path(char *path, char *result){
 }
 
 int main(){
+	const char *zaa ="/autorun.inf";
+	char d[2048];
+	strcpy(d,zaa);
 	char path[100] = "/0/12/5";
 	char result[30];
-	parse_path(path,result);
-	printf("%s\n",result);
+	parse_path2(d,result);
+	printf("%s",result);
 	return 0;
 }
