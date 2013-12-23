@@ -74,8 +74,9 @@ static int pstreeFS_getattr(const char *path, struct stat *st_data)
 					printf("Here it is INFO.TXT FILE!!\n");
 					st_data->st_mode = S_IFREG | 0444;
 					st_data->st_nlink = 1;
-					//TODO: change this.
-					st_data->st_size = 1024;
+					char statFile[2048];
+					read_proc_stat(head->name,statFile);
+					st_data->st_size = strlen(statFile);
 					break;
 				}
 				head = head->next;
@@ -139,19 +140,31 @@ static int pstreeFS_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 }
 static int pstreeFS_open(const char *path, struct fuse_file_info *fi)
 {
-	printf("******OPEN*******\n");
+	int res;
+
+	int flags = fi->flags;
+	if ((flags & O_WRONLY) || (flags & O_RDWR) || (flags & O_CREAT) || (flags & O_EXCL) || (flags & O_TRUNC) || (flags & O_APPEND)) {
+		return -EROFS;
+	}
+
 	return 0;
 }
 
 static int pstreeFS_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
-	printf("*******???READ???*****\n");
-	char *info_path = "/0/info.txt";
-	char *info_str = "Hello World!\n";
+
+	char p[2048];
+	char dest[30];
+	strncpy(p,path,strlen(path)+1);
+	clear_info_query(p);
+	parse_path(p,dest);
+
+	printf("read -> dest : %s\n",dest);
+	printf("read -> path : %s\n",path);
 	size_t len;
 	(void) fi;
-	if(strcmp(path, info_path) != 0)
-		return -ENOENT;
+	char info_str[2048];
+	read_proc_stat(dest,info_str);
 	len = strlen(info_str);
 	if(offset < len){
 		if( offset + size > len ){
