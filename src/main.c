@@ -14,11 +14,20 @@ static int pstreeFS_getattr(const char *path, struct stat *st_data)
 {
 	int res = 0;
 	memset(st_data, 0, sizeof(struct stat));
-	
+
+	int is_info = 0;
 	char p[2048];
+	char p2[2048];
 	char dest[100];
-	strcpy(p,path);
-	parse_path(p,dest);
+	strncpy(p2,path,strlen(path)+1);
+	printf("getattr -> path : %s\n",p);
+	is_info = is_info_query(p2);
+	printf("getattr -> is_info : %d\n",is_info);
+	if(!is_info){
+		printf("CHECK FOR DIRECTORY!!!");
+		strncpy(p,path,strlen(path)+1);
+		parse_path(p,dest);
+		printf("getattr -> dest: %s\n",dest);
 	// if dest -1 -> wrong path
 	// if dest is empty its root
 	// others are proc folders
@@ -40,6 +49,29 @@ static int pstreeFS_getattr(const char *path, struct stat *st_data)
 		}
 	}
 
+	}else{
+		// LOOKING FOR info.txt
+		clear_info_query(p);
+		parse_path(p,dest);
+		if(strcmp(dest,"")==0 || strcmp(dest,"0")==0){
+			// no process path like this
+			res = -ENOENT;
+		}else{
+			node *head = (struct node*) malloc(sizeof(struct node));
+			read_proc_list(head);
+			while(head!=NULL){
+				if(strcmp(dest,head->name)==0){
+					st_data->st_mode = S_IFREG | 0444;
+					st_data->st_nlink = 1;
+					//TODO: change this.
+					break;
+				}
+				head = head->next;
+			}
+		}
+
+	}
+
 	return 0;
 }
 
@@ -52,7 +84,9 @@ static int pstreeFS_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	char p[2048];
 	char dest[100];
 	strcpy(p,path);
+	printf("readdir -> path : %s\n",p);
 	parse_path(p,dest);
+	printf("readdir -> dest : %s\n",dest);
 	// if dest -1 -> wrong path
 	// if dest is empty its root
 	// others are proc folders
@@ -74,10 +108,13 @@ static int pstreeFS_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 			get_ppid_from_stat(stat,ppid);
 			if(strcmp(dest,ppid)==0){
 				filler(buf, head->name, NULL, 0);
-				filler(buf, ".", NULL, 0);
-				filler(buf, "..", NULL, 0);
 			}
 			head = head->next;
+		}
+		filler(buf, ".", NULL, 0);
+		filler(buf, "..", NULL, 0);
+		if(strcmp(dest, "0")!=0){
+			filler(buf, "info.txt", NULL, 0);
 		}
 	}
 	return res;
@@ -89,6 +126,7 @@ static int pstreeFS_open(const char *path, struct fuse_file_info *fi)
 
 static int pstreeFS_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
+	printf("read working *****\n");
 	char *info_path = "/0/info.txt";
 	char *info_str = "Hello World!\n";
 	size_t len;

@@ -69,7 +69,7 @@ int main(){
 	printf("%s",d);
 	char result[30];
 	parse_path(d,result);
-	printf("%s",result);
+	printf("\n%s",result);
 
 	return 0;
 }
