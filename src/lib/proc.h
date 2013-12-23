@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <signal.h> 
 #include "string.h"
 
 /**
@@ -260,4 +261,18 @@ int is_info_query(char *path){
  */
 void clear_info_query(char *path){
         removeSubstring(path,"info.txt");
+}
+
+
+/**
+ *	SIGKILL
+ */
+ void kill_proc(char *pid){
+		pid_t p_id = atoi(pid);
+		printf("*** KILL -> %d\n",p_id);
+		int err = kill(p_id, SIGKILL);
+		if(err!=0){
+			printf("sigkill -> %d\n", err);
+			printf("kill failed!");
+		}
 }

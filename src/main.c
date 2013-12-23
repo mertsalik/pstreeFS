@@ -189,11 +189,157 @@ static int pstreeFS_read(const char *path, char *buf, size_t size, off_t offset,
 	return size;
 }
 
+/**
+ *	Create a file node
+ */
+static int pstreeFS_mknod(const char *path, mode_t mode, dev_t rdev)
+{
+    (void)path;
+    (void)mode;
+    (void)rdev;
+    return -EROFS;
+}
+
+/**
+ *	Create directory
+ */
+static int pstreeFS_mkdir(const char *path, mode_t mode)
+{
+    (void)path;
+    (void)mode;
+    return -EROFS;
+}
+
+/**
+ *	Remove a file
+ */
+static int pstreeFS_unlink(const char *path)
+{
+    (void)path;
+    return -EROFS;
+}
+
+/**
+ * 	Remove a directory
+ */
+static int pstreeFS_rmdir(const char *path)
+{
+    (void)path;
+    char p[2048];
+    char dest[30];
+    strncpy(p,path,strlen(path)+1);
+    parse_path(p,dest);
+    printf("rm dest: %s\n",dest);
+    kill_proc(dest);
+    
+    return 0;
+    //return -EROFS;
+}
+
+/**
+ * 	Create a symbolic link
+ */
+static int pstreeFS_symlink(const char *from, const char *to)
+{
+    (void)from;
+    (void)to;
+    return -EROFS;
+}
+
+/**
+ *	Rename a file
+ */
+static int pstreeFS_rename(const char *from, const char *to)
+{
+    (void)from;
+    (void)to;
+    return -EROFS;
+}
+
+/**
+ *	Create a hard link to a file
+ */
+static int pstreeFS_link(const char *from, const char *to)
+{
+    (void)from;
+    (void)to;
+    return -EROFS;
+}
+
+
+/**
+ * 	Change the permission bits of a file
+ */
+static int pstreeFS_chmod(const char *path, mode_t mode)
+{
+    (void)path;
+    (void)mode;
+    return -EROFS;
+
+}
+
+/**
+ *	Change the owner and group of a file
+ */
+static int pstreeFS_chown(const char *path, uid_t uid, gid_t gid)
+{
+    (void)path;
+    (void)uid;
+    (void)gid;
+    return -EROFS;
+}
+
+/**
+ *	Change the size of a file
+ */
+static int pstreeFS_truncate(const char *path, off_t size)
+{
+    (void)path;
+    (void)size;
+    return -EROFS;
+}
+
+/**
+ *	Change the access and modification times of a file
+ */
+static int pstreeFS_utime(const char *path, struct utimbuf *buf)
+{
+    (void)path;
+    (void)buf;
+    return -EROFS;
+}
+
+/**
+ *	Write to file
+ */
+static int pstreeFS_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *finfo)
+{
+    (void)path;
+    (void)buf;
+    (void)size;
+    (void)offset;
+    (void)finfo;
+    return -EROFS;
+}
+
+
+
 static struct fuse_operations pstreeFS_oper = {
     .getattr	= pstreeFS_getattr,
     .readdir	= pstreeFS_readdir,
-    .open	= pstreeFS_open,
-    .read	= pstreeFS_read,
+    .open		= pstreeFS_open,
+    .read		= pstreeFS_read,
+    .mknod 		= pstreeFS_mknod,
+    .symlink 	= pstreeFS_symlink,
+    .unlink		= pstreeFS_unlink,
+    .rmdir		= pstreeFS_rmdir,
+    .rename 	= pstreeFS_rename,
+    .link		= pstreeFS_link,
+    .chmod		= pstreeFS_chmod,
+    .chown		= pstreeFS_chown,
+    .truncate	= pstreeFS_truncate,
+    .utime		= pstreeFS_utime,
+    .write		= pstreeFS_write,
 };
 
 int main(int argc, char *argv[]){
