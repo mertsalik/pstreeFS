@@ -72,15 +72,20 @@ static int pstreeFS_getattr(const char *path, struct stat *st_data)
 					printf("Here it is INFO.TXT FILE!!\n");
 					st_data->st_mode = S_IFREG | 0444;
 					st_data->st_nlink = 1;
-					char buffer[2048];
-					read_proc_stat(head->name,buffer);
-					st_data->st_size = strlen(buffer);
+					size_t size = 0;
+					char buffer[20000];
+					read_proc_stat(head->name, buffer);
+					size += strlen(buffer);
+					read_sched_file(head->name, buffer);
+					size += strlen(buffer);
+					read_status_file(head->name, buffer);
+					size += strlen(buffer);
+					st_data->st_size = size;
 					break;
 				}
 				head = head->next;
 			}
 		}
-
 	}
 
 	return 0;
@@ -163,8 +168,15 @@ static int pstreeFS_read(const char *path, char *buf, size_t size, off_t offset,
 	printf("read -> path : %s\n",path);
 	size_t len;
 	(void) fi;
-	char info_str[2048];
-	read_proc_stat(dest,info_str);
+	char info_str[600000];
+	char buffer[200000];
+	read_proc_stat(dest,buffer);
+	strcat(info_str,buffer);
+	read_sched_file(dest,buffer);
+	strcat(info_str,buffer);
+	read_status_file(dest,buffer);
+	strcat(info_str,buffer);
+	
 	len = strlen(info_str);
 	if(offset < len){
 		if( offset + size > len ){
