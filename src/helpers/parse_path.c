@@ -2,7 +2,7 @@
 #include "../lib/proc.h"
 
 
-int is_info_query(char *path){
+int is_info_query2(char *path){
 	char *pch;
 	if(strstr(path,"info.txt") != NULL){
 		return 1;
@@ -11,12 +11,12 @@ int is_info_query(char *path){
 	}
 }
 
-void removeSubstring(char *s, const char *toremove){
+void removeSubstring2(char *s, const char *toremove){
 	while(s=strstr(s,toremove))
 		memmove(s, s+strlen(toremove),1+strlen(s+strlen(toremove)));
 }
 
-void clear_info_query(char *path){
+void clear_info_query2(char *path){
 	removeSubstring(path,"info.txt");
 }
 
@@ -59,14 +59,16 @@ void parse_path2(char *path, char *result){
 }
 
 int main(){
-	const char *zaa ="/0/2/10/info.txt";
+	const char *zaa ="/";
 	char d[2048];
 	strcpy(d,zaa);
 	if(is_info_query(d)){
+		printf("info\n");
 		clear_info_query(d);
 	}
+	printf("%s",d);
 	char result[30];
-	parse_path2(d,result);
+	parse_path(d,result);
 	printf("%s",result);
 
 	return 0;

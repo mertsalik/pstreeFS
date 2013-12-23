@@ -14,7 +14,7 @@ static int pstreeFS_getattr(const char *path, struct stat *st_data)
 {
 	int res = 0;
 	memset(st_data, 0, sizeof(struct stat));
-
+	
 	char p[2048];
 	char dest[100];
 	strcpy(p,path);
@@ -76,12 +76,10 @@ static int pstreeFS_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 				filler(buf, head->name, NULL, 0);
 				filler(buf, ".", NULL, 0);
 				filler(buf, "..", NULL, 0);
-				filler(buf, "info.txt", NULL, 0);
 			}
 			head = head->next;
 		}
 	}
-
 	return res;
 }
 static int pstreeFS_open(const char *path, struct fuse_file_info *fi)
@@ -91,6 +89,7 @@ static int pstreeFS_open(const char *path, struct fuse_file_info *fi)
 
 static int pstreeFS_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
+	char *info_path = "/0/info.txt";
 	char *info_str = "Hello World!\n";
 	size_t len;
 	(void) fi;
