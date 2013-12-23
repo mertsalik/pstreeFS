@@ -93,6 +93,10 @@ void parse_path(char *path, char *result){
 	char *saveptr;
 	pch = strtok_r(path, "/", &saveptr);
 	while(pch!=NULL){
+		if(!is_proc_folder(pch)){
+			strcpy(tmp,"-1");
+			break;
+		}
 		if(strcmp(pch,"0")==0){
 			strncpy(tmp,pch,strlen(pch)+1);
 			pch = strtok_r(NULL, "/", &saveptr);

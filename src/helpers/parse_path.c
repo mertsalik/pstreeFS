@@ -2,6 +2,24 @@
 #include "../lib/proc.h"
 
 
+int is_info_query(char *path){
+	char *pch;
+	if(strstr(path,"info.txt") != NULL){
+		return 1;
+	}else{
+		return 0;
+	}
+}
+
+void removeSubstring(char *s, const char *toremove){
+	while(s=strstr(s,toremove))
+		memmove(s, s+strlen(toremove),1+strlen(s+strlen(toremove)));
+}
+
+void clear_info_query(char *path){
+	removeSubstring(path,"info.txt");
+}
+
 /**
  *	If path is not correct
  *	It returns -1
@@ -41,12 +59,15 @@ void parse_path2(char *path, char *result){
 }
 
 int main(){
-	const char *zaa ="/autorun.inf";
+	const char *zaa ="/0/2/10/info.txt";
 	char d[2048];
 	strcpy(d,zaa);
-	char path[100] = "/0/12/5";
+	if(is_info_query(d)){
+		clear_info_query(d);
+	}
 	char result[30];
 	parse_path2(d,result);
 	printf("%s",result);
+
 	return 0;
 }
