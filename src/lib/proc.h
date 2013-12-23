@@ -1,47 +1,21 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <dirent.h>
-#include <string.h>
+#include "string.h"
 
-void removeChar(char *str, char garbage) {
-
-    char *src, *dst;
-    for (src = dst = str; *src != '\0'; src++) {
-        *dst = *src;
-        if (*dst != garbage) dst++;
-    }
-    *dst = '\0';
-}
-
-void get_name_of_proc(char *pid, char *result_buf){
-		if(strcmp(pid,"0")!=0){
-			char cmd[200];
-			sprintf(cmd,"/proc/%s/cmdline",pid);
-			//printf("%s",cmd);
-			FILE *cmdline = fopen(cmd,"rb");
-			char *arg = 0;
-			size_t size = 0;
-			while(getdelim(&arg, &size, 0, cmdline) != -1){
-					//puts(arg);
-			}
-			strncpy(result_buf, arg, size+1);
-			free(arg);
-			fclose(cmdline);
-        }else{
-			strncpy(result_buf, "0", 2);
-		}
-}
-
+/**
+ *	helper that retrieves short & usefull name of given pid
+ *	@param char* pid, process id
+ *	@param char* buf, result buffer
+ */
 void get_proc_name(char *pid, char *buf){
-	
 	char stat_info[1024];
-	char cmd[1000];
+	char cmd[100];
 	sprintf(cmd, "/proc/%s/stat",pid);
 	FILE *status = fopen(cmd,"rb");
 	char *arg = 0;
 	size_t size = 0;
 	while(getdelim(&arg, &size, 0, status) != -1){
-		//puts(arg)
 	}
 	strncpy(stat_info,arg,size+1);
 	free(arg);
@@ -63,6 +37,11 @@ void get_proc_name(char *pid, char *buf){
 	strncpy(buf,pch,strlen(pch)+1);
 }
 
+/**
+ *	Convention for getting folder name for given process id
+ *	@param char* pid, process id
+ *	@param char* name, result buffer
+ */
 void pid_to_name(char *pid,char *name){
 	char result[200];
 	get_proc_name(pid,result);
@@ -75,6 +54,11 @@ void pid_to_name(char *pid,char *name){
 	strcat(name, pid);
 }
 
+/**
+ *	Convention for getting pid of queried folder
+ *	@param char* name, folder name
+ *	@param char* pid, result buffer
+ */
 void name_to_pid(char *name,char *pid){
 	printf("name_to_pid : %s\n",name);
 	if(strcmp(name,"0")!=0){
@@ -98,35 +82,47 @@ void name_to_pid(char *name,char *pid){
 	}
 }
 
-void read_sched_stat(char *pid, char *buf){
+/**
+ *	Reads scheduling information of given process id
+ *	@param char* pid, process id
+ *	@param char* buf, result buffer
+ */
+void read_sched_file(char *pid, char *buf){
 	char cmd[1000];
 	sprintf(cmd,"/proc/%s/sched",pid);
 	FILE *sched = fopen(cmd,"rb");
 	char *arg = 0;
 	size_t size = 0;
 	while(getdelim(&arg, &size, 0, sched) != -1){
-		//puts(arg)
 	}
 	strncpy(buf, arg, size+1);
 	free(arg);
 	fclose(sched);
 }
 
+/**
+ *	Reads /proc/pid/status file into buffer
+ *	@param char* pid, process id
+ *	@param char* buf, the result buffer
+ */
 void read_status_file(char *pid, char *buf){
 	char cmd[1000];
-	sprintf(cmd, "/proc/%s/sched",pid);
+	sprintf(cmd, "/proc/%s/status",pid);
 	FILE *status = fopen(cmd,"rb");
 	char *arg = 0;
 	size_t size = 0;
 	while(getdelim(&arg, &size, 0, status) != -1){
-		//puts(arg)
 	}
 	strncpy(buf,arg,size+1);
 	free(arg);
 	fclose(status);
 }
 
-
+/**
+ *	Reads /proc/pid/stat file
+ *	@param char* pid, process id
+ *	@param char* buf, the result buffer
+ */
 void read_proc_stat(char *pid, char *buf){
 	char cmd[2048];
 	sprintf(cmd,"/proc/%s/stat",pid);
@@ -141,25 +137,10 @@ void read_proc_stat(char *pid, char *buf){
 	fclose(stat);
 }
 
-void get_proc_info(char *pid, char *buf){
-	//char cmdline[100];
-	//char sched[2048];
-	char status[2048];
-	//get_name_of_proc(pid,cmdline);
-	//read_sched_stat(pid,sched);
-	read_status_file(pid,status);
-	//strcat(result,"\n_________");
-	//strcat(result,cmdline);
-	//strcat(result,"__________\n");
-	//strcat(result,status);
-	//strcat(result,"\n_________\n");
-	//strcat(result,sched);
-	//strncpy(buf,result,strlen(result)+1);
-	strncpy(buf,status,strlen(status)+1);
-}
-
 /**
- * Returns 4. item on STAT FILE
+ * Parses stat file content and returns fourth item (Parent Pid)
+ * @param char* stat_info,	content of /proc/pid/stat file
+ * @param char* buf, the result buffer
  */
 void get_ppid_from_stat(char *stat_info, char *buf){
 	int i = 0;
@@ -176,11 +157,18 @@ void get_ppid_from_stat(char *stat_info, char *buf){
 	strncpy(buf,pch,strlen(pch)+1);
 }
 
+/**
+ *	Data Struct for retrieving dynamic task list
+ */
 typedef struct node{
 	char name[2048];
 	struct node *next;
 }node;
 
+/**
+ *	Checks for given character array is full of digit.
+ *	@param char* dname, as pid
+ */
 int is_proc_folder(char *dname){
 	int i ;
 	for(i=0;i<strlen(dname);i++){
@@ -191,6 +179,10 @@ int is_proc_folder(char *dname){
 	return 1;
 }
 
+/**
+ *	Reads tasks to given linked list.
+ *	@param node* head, the head of linked list
+ */
 void read_proc_list(node* head){
 	node* temp;
 	temp = head;
@@ -211,8 +203,10 @@ void read_proc_list(node* head){
 }
 
 /**
- *	If path is not correct
- *	It returns -1
+ *	Fills the char* result buffer with destination process pid
+ *	If queried path is not valid it returns -1
+ *	@param char* path, queried directory
+ * 	@param char* result, the result buffer
  */
 void parse_path(char *path, char *result){
 	char *pch;
@@ -247,7 +241,10 @@ void parse_path(char *path, char *result){
 	}
 	strncpy(result,tmp,strlen(tmp)+1);
 }
-
+/**
+ * @param char* , queried directory
+ * @return bool, is querying info.txt
+ */
 int is_info_query(char *path){
         char *pch;
         if(strstr(path,"info.txt") != NULL){
@@ -257,14 +254,10 @@ int is_info_query(char *path){
         }
 }
 
-void removeSubstring(char *s, const char *toremove){
-        while(s=strstr(s,toremove))
-                memmove(s, s+strlen(toremove),1+strlen(s+strlen(toremove)));
-}
-
+/**
+ *	Clears the info.txt from path
+ *	@param char* , queried directory
+ */
 void clear_info_query(char *path){
         removeSubstring(path,"info.txt");
 }
-
-
-
