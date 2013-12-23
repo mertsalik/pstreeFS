@@ -18,6 +18,35 @@ void get_name_of_proc(char *pid, char *result_buf){
         fclose(cmdline);
 }
 
+void read_sched_stat(char *pid, char *buf){
+	char cmd[1000];
+	sprintf(cmd,"/proc/%s/sched",pid);
+	FILE *sched = fopen(cmd,"rb");
+	char *arg = 0;
+	size_t size = 0;
+	while(getdelim(&arg, &size, 0, sched) != -1){
+		//puts(arg)
+	}
+	strncpy(buf, arg, size+1);
+	free(arg);
+	fclose(cmdline);
+}
+
+void read_status_file(char *pid, char *buf){
+	char cmd[1000];
+	sprintf(cmd, "/proc/%s/sched",pid);
+	FILE *status = fopen(cmd,"rb");
+	char *arg = 0;
+	size_t size = 0;
+	while(getdelim(&arg, &size, 0, status) != -1){
+		//puts(arg)
+	}
+	strncpy(buf,arg,size+1);
+	free(arg);
+	fclose(cmdline);
+}
+
+
 void read_proc_stat(char *pid, char *buf){
 	char cmd[2048];
 	sprintf(cmd,"/proc/%s/stat",pid);
