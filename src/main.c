@@ -7,27 +7,40 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include "lib/proc.h"
 
 static const char *info_path = "/0/info.txt";
+static const char *root = "/";
 
 static int pstreeFS_getattr(const char *path, struct stat *st_data)
 {
 	int res = 0;
 	memset(st_data, 0, sizeof(struct stat));
+	// read all procs
+	node *head = (struct node*) malloc(sizeof(struct node));
+	read_proc_list(head);
+	// temp dir variable
+	char t_dir[2048];
+	strcpy(t_dir,"/0/");
 
-	if(strcmp(path, "/")==0){
+	if(strcmp(path, root)==0 || strcmp(path, "/0")==0){
 		st_data->st_mode = S_IFDIR | 0755;
 		st_data->st_nlink = 2;
-	}else if(strcmp(path, "/0")==0){
-		st_data->st_mode = S_IFDIR | 0755;
-		st_data->st_nlink = 2;
-	}
-	else if(strcmp(path, info_path)==0){
-		st_data->st_mode = S_IFREG | 0444;
-		st_data->st_nlink = 1;
-		st_data->st_size = 50;
 	}else{
-		res = -ENOENT;
+		int found = 0;
+		while(head!=NULL){
+			strcat(t_dir, head->name);
+			if(strcmp(path, t_dir)==0){
+				st_data->st_mode = S_IFDIR | 0755;
+				st_data->st_nlink = 2;
+				found = 1;
+			}else{
+				strcpy(t_dir,"/0/");
+			}
+			head = head->next;
+		}
+		if(!found)
+			res = -ENOENT;
 	}
 	
     return 0;
@@ -39,11 +52,24 @@ static int pstreeFS_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	(void) fi;
 	int res = 0;
 	// if its root we have to show init proc folder only
-	if(strcmp(path, "/")==0){
+	if(strcmp(path, root)==0){
 		filler(buf, "0",NULL, 0);
 		filler(buf, ".", NULL, 0);
 		filler(buf, "..", NULL, 0);
 	}else if(strcmp(path, "/0")==0){
+		node *head = (struct node*) malloc(sizeof(struct node));
+		head->next = NULL;
+		read_proc_list(head);
+		while(head!=NULL){
+			char stat_content[2048];
+			read_proc_stat(head->name,stat_content);
+			char ppid[10];
+			get_ppid_from_stat(stat_content,ppid);
+			if(strcmp(ppid,"0")==0){
+				filler(buf, head->name, NULL, 0);
+			}
+			head = head->next;
+		}
 		filler(buf, ".", NULL, 0);
 		filler(buf, "..", NULL, 0);
 		filler(buf, info_path+3, NULL, 0);
