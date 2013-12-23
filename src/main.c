@@ -15,17 +15,25 @@ static int pstreeFS_getattr(const char *path, struct stat *st_data)
 	int res = 0;
 	memset(st_data, 0, sizeof(struct stat));
 
+	if(strcmp(path,"/")==0){
+		st_data->st_mode = S_IFDIR | 0755;
+		st_data->st_nlink = 2;
+		return 0;
+	}
+
 	int is_info = 0;
 	char p[2048];
 	char p2[2048];
 	char dest[100];
 	strncpy(p2,path,strlen(path)+1);
+	strncpy(p,path,strlen(path)+1);
 	printf("getattr -> path : %s\n",p);
+	printf("getattr -> rpath : %s\n",path);
 	is_info = is_info_query(p2);
 	printf("getattr -> is_info : %d\n",is_info);
 	if(!is_info){
 		printf("CHECK FOR DIRECTORY!!!");
-		strncpy(p,path,strlen(path)+1);
+		strncpy(p,path,strlen(path));
 		parse_path(p,dest);
 		printf("getattr -> dest: %s\n",dest);
 	// if dest -1 -> wrong path
@@ -50,7 +58,9 @@ static int pstreeFS_getattr(const char *path, struct stat *st_data)
 	}
 
 	}else{
+		printf("Looking for info.txt\n");
 		// LOOKING FOR info.txt
+		strncpy(p,path,strlen(path)+1);
 		clear_info_query(p);
 		parse_path(p,dest);
 		if(strcmp(dest,"")==0 || strcmp(dest,"0")==0){
@@ -61,9 +71,11 @@ static int pstreeFS_getattr(const char *path, struct stat *st_data)
 			read_proc_list(head);
 			while(head!=NULL){
 				if(strcmp(dest,head->name)==0){
+					printf("Here it is INFO.TXT FILE!!\n");
 					st_data->st_mode = S_IFREG | 0444;
 					st_data->st_nlink = 1;
 					//TODO: change this.
+					st_data->st_size = 1024;
 					break;
 				}
 				head = head->next;
@@ -80,6 +92,12 @@ static int pstreeFS_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	(void) offset;
 	(void) fi;
 	int res = 0;
+	if(strcmp(path,"/")==0){
+		filler(buf, "0", NULL, 0);
+		filler(buf, ".", NULL, 0);
+		filler(buf, "..", NULL, 0);
+		return res;
+	}
 
 	char p[2048];
 	char dest[100];
@@ -121,12 +139,13 @@ static int pstreeFS_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 }
 static int pstreeFS_open(const char *path, struct fuse_file_info *fi)
 {
+	printf("******OPEN*******\n");
 	return 0;
 }
 
 static int pstreeFS_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
-	printf("read working *****\n");
+	printf("*******???READ???*****\n");
 	char *info_path = "/0/info.txt";
 	char *info_str = "Hello World!\n";
 	size_t len;

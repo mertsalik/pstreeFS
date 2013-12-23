@@ -59,7 +59,7 @@ void parse_path2(char *path, char *result){
 }
 
 int main(){
-	const char *zaa ="/";
+	const char *zaa ="";
 	char d[2048];
 	strcpy(d,zaa);
 	if(is_info_query(d)){
