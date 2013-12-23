@@ -116,3 +116,21 @@ void parse_path(char *path, char *result){
 	}
 	strncpy(result,tmp,strlen(tmp)+1);
 }
+
+int is_info_query(char *path){
+        char *pch;
+        if(strstr(path,"info.txt") != NULL){
+                return 1;
+        }else{
+                return 0;
+        }
+}
+
+void removeSubstring(char *s, const char *toremove){
+        while(s=strstr(s,toremove))
+                memmove(s, s+strlen(toremove),1+strlen(s+strlen(toremove)));
+}
+
+void clear_info_query(char *path){
+        removeSubstring(path,"info.txt");
+}
