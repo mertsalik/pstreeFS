@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-static const char *info_path = "/info.txt";
+static const char *info_path = "/0/info.txt";
 
 static int pstreeFS_getattr(const char *path, struct stat *st_data)
 {
@@ -18,14 +18,17 @@ static int pstreeFS_getattr(const char *path, struct stat *st_data)
 	if(strcmp(path, "/")==0){
 		st_data->st_mode = S_IFDIR | 0755;
 		st_data->st_nlink = 2;
-	}else if(strcmp(path, info_path)==0){
+	}else if(strcmp(path, "/0")==0){
+		st_data->st_mode = S_IFDIR | 0755;
+		st_data->st_nlink = 2;
+	}
+	else if(strcmp(path, info_path)==0){
 		st_data->st_mode = S_IFREG | 0444;
 		st_data->st_nlink = 1;
 		st_data->st_size = 50;
 	}else{
 		res = -ENOENT;
 	}
-
 	
     return 0;
 }
@@ -36,12 +39,16 @@ static int pstreeFS_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	(void) fi;
 	int res = 0;
 	// if its root we have to show init proc folder only
-	if(strcmp(path,"/")==0){
+	if(strcmp(path, "/")==0){
 		filler(buf, "0",NULL, 0);
 		filler(buf, ".", NULL, 0);
 		filler(buf, "..", NULL, 0);
-		filler(buf, info_path + 1, NULL, 0);
-	}else{
+	}else if(strcmp(path, "/0")==0){
+		filler(buf, ".", NULL, 0);
+		filler(buf, "..", NULL, 0);
+		filler(buf, info_path+3, NULL, 0);
+	}
+	else{
 		// get childs of given process id
 		res = -ENOENT;
 	}
@@ -50,14 +57,26 @@ static int pstreeFS_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 }
 static int pstreeFS_open(const char *path, struct fuse_file_info *fi)
 {
-	// dummy
 	return 0;
 }
 
 static int pstreeFS_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
-	// dummy
-    return size;
+	char *info_str = "Hello World!\n";
+	size_t len;
+	(void) fi;
+	if(strcmp(path, info_path) != 0)
+		return -ENOENT;
+	len = strlen(info_str);
+	if(offset < len){
+		if( offset + size > len ){
+			size = len - offset;
+		}
+		memcpy(buf, info_str + offset, size);
+	}else{
+		size = 0;
+	}
+	return size;
 }
 
 static struct fuse_operations pstreeFS_oper = {
