@@ -74,9 +74,9 @@ static int pstreeFS_getattr(const char *path, struct stat *st_data)
 					printf("Here it is INFO.TXT FILE!!\n");
 					st_data->st_mode = S_IFREG | 0444;
 					st_data->st_nlink = 1;
-					char statFile[2048];
-					read_proc_stat(head->name,statFile);
-					st_data->st_size = strlen(statFile);
+					char buffer[2048];
+					read_proc_stat(head->name,buffer);
+					st_data->st_size = strlen(buffer);
 					break;
 				}
 				head = head->next;
@@ -126,7 +126,9 @@ static int pstreeFS_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 			char ppid[20];
 			get_ppid_from_stat(stat,ppid);
 			if(strcmp(dest,ppid)==0){
-				filler(buf, head->name, NULL, 0);
+				char name[200];
+				pid_to_name(head->name,name);
+				filler(buf, name, NULL, 0);
 			}
 			head = head->next;
 		}
